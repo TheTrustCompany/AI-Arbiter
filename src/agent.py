@@ -57,7 +57,7 @@ class ArbiterDependency:
 
 arbiter_agent = Agent(
     name="Policy Arbiter Agent",
-    model="gpt-5-2025-08-07",
+    model="gpt-5-mini-2025-08-07",
     deps_type=ArbiterDependency,
     output_type=ArbitrationDecision
 )
