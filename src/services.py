@@ -174,6 +174,7 @@ class ArbiterService:
                 "defender_id": str(decision.defender_id),
                 "decision_type": decision.decision_type.value,
                 "decision": decision.decision,
+                "message": decision.message,
                 "confidence_score": decision.confidence,
                 "reasoning": decision.reasoning,
                 "created_at": decision.created_at.isoformat()

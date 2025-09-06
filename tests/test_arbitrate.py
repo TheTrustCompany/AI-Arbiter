@@ -130,7 +130,7 @@ def test_valid_arbitration():
             arbitration_result = result["arbitration_result"]
             required_fields = [
                 "decision_id", "policy_id", "opposer_id", "defender_id",
-                "decision_type", "decision", "confidence_score", "reasoning", "created_at"
+                "decision_type", "decision", "message", "confidence_score", "reasoning", "created_at"
             ]
             
             for field in required_fields:
@@ -138,7 +138,7 @@ def test_valid_arbitration():
             
             # Validate decision type
             valid_decision_types = [
-                "approve_opposer", "reject_opposer", "needs_more_info",
+                "approve_opposer", "reject_opposer", "clearify",
                 "request_opposer_evidence", "request_defender_evidence"
             ]
             decision_type = arbitration_result["decision_type"]

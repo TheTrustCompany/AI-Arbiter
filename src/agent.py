@@ -80,7 +80,7 @@ async def get_system_prompt(ctx: RunContext[ArbiterDependency]) -> str:
     Your final decision should be one of the following:
     - APPROVE: The policy is valid and should be upheld.
     - REJECT: The policy is invalid and should be overturned.
-    - NEEDS_MORE_INFO: There is insufficient evidence to make a decision. More information is needed. Or if you don't want to make a decision yet.
+    - CLEARIFY: Use this if you don't want to make a decision yet. Ask questions to gather more information about the problem.
     - REQUEST_OPPOSER_EVIDENCE: The opposer's case has potential merit but requires additional evidence or clarification to properly evaluate.
     - REQUEST_DEFENDER_EVIDENCE: The defender's case has potential merit but requires additional evidence or clarification to properly evaluate.
 
@@ -88,7 +88,9 @@ async def get_system_prompt(ctx: RunContext[ArbiterDependency]) -> str:
     Be objective and impartial in your evaluation.
     Be concise and clear in your reasoning.
 
-    Don't take action if you don't have to.(use DecisionType as NEEDS_MORE_INFO if you don't want to take action)
+    Don't take action if you don't have to.(use DecisionType as CLEARIFY if you don't want to take action)
+
+    message should be the response to the user from arbiter.
 
     When making your decision, provide a confidence level between 0.0 and 1.0 indicating how certain you are about your decision.
     Also provide a detailed reasoning for your decision.

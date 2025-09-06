@@ -130,9 +130,8 @@ class DecisionType(str, Enum):
             to challenge the policy. The policy should remain in effect as
             the defender's evidence is stronger or the opposition is unfounded.
         
-        NEEDS_MORE_INFO: There is insufficient evidence from both sides to make
-            a definitive decision. More information is required before proceeding.
-            Use this type if you don't want to make a decision or take action yet.
+        CLEARIFY: 
+            Use this type if you don't want to make a decision or take action yet. Ask questions to gather more information about the problem.
         
         REQUEST_OPPOSER_EVIDENCE: The opposer's case has potential merit but
             requires additional evidence or clarification to properly evaluate.
@@ -146,7 +145,7 @@ class DecisionType(str, Enum):
     """
     APPROVE_OPPOSER = "approve_opposer"
     REJECT_OPPOSER = "reject_opposer"
-    NEEDS_MORE_INFO = "needs_more_info"
+    CLEARIFY = "clearify"  
     REQUEST_OPPOSER_EVIDENCE = "request_opposer_evidence"
     REQUEST_DEFENDER_EVIDENCE = "request_defender_evidence"
 
@@ -172,6 +171,7 @@ class ArbitrationDecision(BaseModel):
             the predefined DecisionType enum values.
         decision (str): Human-readable explanation of the decision, providing
             clear communication of the outcome to all parties.
+        message (str): Additional message from the arbiter to the user.
         confidence (float): Numerical confidence level of the decision ranging
             from 0.0 (no confidence) to 1.0 (complete confidence). Used to
             indicate the strength of the agent's conviction.
@@ -187,6 +187,7 @@ class ArbitrationDecision(BaseModel):
     defender_id: UUID4 = Field(..., description="ID of the defender")
     decision_type: DecisionType = Field(..., description="Type of decision made")
     decision: str = Field(..., description="Decision made by the arbiter")
+    message: str = Field(..., description="Arbiter's message to the user")
     confidence: confloat(ge=0.0, le=1.0) = Field(..., description="Confidence level of the decision (0.0 to 1.0)")
     reasoning: str = Field(None, description="Reasoning behind the decision")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Decision timestamp")
