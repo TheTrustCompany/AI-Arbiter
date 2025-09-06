@@ -16,7 +16,7 @@ system, from API endpoints to agent processing.
 
 from typing import List, Optional, Any, Dict
 from enum import Enum
-from pydantic import BaseModel, Field, UUID4, conint, constr,confloat
+from pydantic import BaseModel, Field , conint, constr,confloat
 
 from datetime import datetime
 
@@ -80,8 +80,8 @@ class Policy(BaseModel):
             set to UTC time at creation.
 
     """
-    id: UUID4 = Field(..., description="Unique policy identifier")
-    creator_id: UUID4 = Field(..., description="ID of the user who created the policy")
+    id: str = Field(..., description="Unique policy identifier")
+    creator_id: str = Field(..., description="ID of the user who created the policy")
     name: str = Field(..., description="Name of the policy")
     description: Optional[str] = Field(None, description="Description of the policy")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Policy creation timestamp")
@@ -107,9 +107,9 @@ class Evidence(BaseModel):
             automatically set to UTC time at submission.
 
     """
-    id: UUID4 = Field(..., description="Unique evidence identifier")
-    policy_id: UUID4 = Field(..., description="ID of the associated policy")
-    submitter_id: UUID4 = Field(..., description="ID of the user who submitted the evidence")
+    id: str = Field(..., description="Unique evidence identifier")
+    policy_id: str = Field(..., description="ID of the associated policy")
+    submitter_id: str = Field(..., description="ID of the user who submitted the evidence")
     content: str = Field(..., description="Content of the evidence")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Evidence submission timestamp")
 
@@ -181,10 +181,10 @@ class ArbitrationDecision(BaseModel):
             set to UTC time at decision creation.
 
     """
-    id: UUID4 = Field(..., description="Unique decision identifier")
-    policy_id: UUID4 = Field(..., description="ID of the associated policy")
-    opposer_id: UUID4 = Field(..., description="ID of the opposer")
-    defender_id: UUID4 = Field(..., description="ID of the defender")
+    id: str = Field(..., description="Unique decision identifier")
+    policy_id: str = Field(..., description="ID of the associated policy")
+    opposer_id: str = Field(..., description="ID of the opposer")
+    defender_id: str = Field(..., description="ID of the defender")
     decision_type: DecisionType = Field(..., description="Type of decision made")
     decision: str = Field(..., description="Decision made by the arbiter")
     message: str = Field(None, description="Arbiter's message to the user")
