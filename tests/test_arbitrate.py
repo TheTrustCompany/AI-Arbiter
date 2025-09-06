@@ -242,13 +242,61 @@ def test_minimal_request():
         print(f"❌ Error in minimal request test: {str(e)}")
         return False
 
+def test_streaming_arbitration():
+    """Test streaming arbitration request"""
+    print("\n🌊 Testing streaming arbitration request...")
+    
+    request_data = create_arbitration_request()
+    
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/arbitrate/stream",
+            json=request_data,
+            headers={"Content-Type": "application/json"},
+            timeout=120,
+            stream=True
+        )
+        
+        print(f"Status Code: {response.status_code}")
+        
+        if response.status_code == 200:
+            print("✅ Streaming started successfully")
+            
+            # Read first few chunks to verify streaming works
+            chunk_count = 0
+            for line in response.iter_lines(decode_unicode=True):
+                if line.startswith('data: '):
+                    chunk_count += 1
+                    chunk_data = line[6:]  # Remove 'data: ' prefix
+                    try:
+                        parsed_chunk = json.loads(chunk_data)
+                        print(f"📦 Chunk {chunk_count}: {parsed_chunk.get('type', 'unknown')}")
+                        
+                        # Stop after a few chunks to avoid long wait
+                        if chunk_count >= 3:
+                            break
+                    except json.JSONDecodeError:
+                        print(f"📦 Chunk {chunk_count}: Raw content (not JSON)")
+            
+            print(f"✅ Received {chunk_count} chunks successfully")
+            return True
+        else:
+            print(f"❌ Streaming failed with status: {response.status_code}")
+            print(f"Response: {response.text}")
+            return False
+    
+    except Exception as e:
+        print(f"❌ Streaming test error: {str(e)}")
+        return False
+
+
 def main():
     """Run all tests"""
     print("🚀 AI Arbiter /arbitrate Endpoint Test Suite")
     print("=" * 60)
     print("This script tests the arbitration functionality of the AI Arbiter API.")
     print("Make sure the API server is running before running tests.")
-    print()
+    print() 
     
     # Test health first
     if not test_api_health():
@@ -260,6 +308,7 @@ def main():
         ("Valid Arbitration", test_valid_arbitration),
         ("Missing Policy", test_missing_policy),
         ("Minimal Request", test_minimal_request),
+        ("Streaming Arbitration", test_streaming_arbitration),
     ]
     
     passed = 0

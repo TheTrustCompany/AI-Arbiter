@@ -4,6 +4,8 @@ Service layer for handling agent operations and business logic
 
 import logging
 import asyncio
+import json
+import time
 from typing import Dict, Any, Optional, List
 from agent import arbiter_agent, ArbiterDependency
 from models import Policy, Evidence, ArbitrationDecision
@@ -79,6 +81,81 @@ class ArbiterService:
         except Exception as e:
             logger.error(f"Error processing arbitration: {str(e)}")
             raise
+    
+    
+    async def process_arbitration_stream(self, request_data: Dict[str, Any]):
+        """
+        Process an arbitration request using the AI agent and stream the response
+        
+        Args:
+            request_data: Dictionary containing:
+                - policy: Policy object or dict with policy data
+                - opposer_evidences: List of Evidence objects or dicts
+                - defender_evidences: List of Evidence objects or dicts
+                - user_query: Optional query string for additional context
+            
+        Yields:
+            JSON-formatted chunks of the arbitration decision as they become available
+        """
+        if not self.is_initialized:
+            raise RuntimeError("Service not initialized")
+        
+        try:
+            logger.info("Processing arbitration request with streaming")
+            
+            # Prepare agent dependencies from request data
+            agent_deps = self._prepare_agent_dependencies(request_data)
+            
+            # Use the agent's stream method for streaming output
+            async with self.agent.run_stream(
+                request_data.get("user_query", ""), 
+                deps=agent_deps
+            ) as stream:
+                async for chunk in stream:
+                    # Format the chunk for JSON streaming
+                    if hasattr(chunk, 'output') and chunk.output is not None:
+                        # Final structured output from Pydantic AI
+                        decision = chunk.output
+                        formatted_result = self._format_arbitration_decision(decision)
+                        yield f"data: {json.dumps(formatted_result)}\n\n"
+                    elif hasattr(chunk, 'data'):
+                        # Intermediate chunk data
+                        chunk_data = {
+                            "type": "partial",
+                            "content": str(chunk.data),
+                            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                        }
+                        yield f"data: {json.dumps(chunk_data)}\n\n"
+                    else:
+                        # Generic chunk handling
+                        chunk_data = {
+                            "type": "chunk",
+                            "content": str(chunk),
+                            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                        }
+                        yield f"data: {json.dumps(chunk_data)}\n\n"
+            
+            # Send completion signal
+            completion_data = {
+                "type": "complete",
+                "message": "Arbitration processing completed",
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+            }
+            yield f"data: {json.dumps(completion_data)}\n\n"
+            
+            logger.info("Arbitration request processed successfully with streaming")
+            
+        except Exception as e:
+            logger.error(f"Error processing arbitration with streaming: {str(e)}")
+            # Send error as JSON chunk
+            error_data = {
+                "type": "error",
+                "message": str(e),
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
+            raise
+    
     
     def _prepare_agent_dependencies(self, request_data: Dict[str, Any]) -> ArbiterDependency:
         """

@@ -4,12 +4,12 @@ FastAPI application with middleware for AI Arbiter service
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 import uvicorn
 import time
 import logging
 from typing import Optional
-
+import json
 from models import HealthResponse, ErrorResponse
 from middleware import ArbiterMiddleware, LoggingMiddleware
 from services import ArbiterService
@@ -106,6 +106,43 @@ async def arbitrate_query(request: Request):
     except Exception as e:
         logger.error(f"Error in arbitration: {str(e)}")
         raise HTTPException(status_code=500, detail="Arbitration processing failed")
+    
+@app.post("/arbitrate/stream")
+async def arbitrate_query_stream(request: Request):
+    """
+    Arbitration endpoint with Server-Sent Events (SSE).
+    Streams incremental arbitration results.
+    """
+    try:
+        request_data = await request.json()
+
+        async def generate_stream():
+            try:
+                async for chunk in arbiter_service.process_arbitration_stream(request_data):
+                    yield chunk
+            except Exception as e:
+                logger.error(f"Streaming error: {e}")
+                error_data = {
+                    "type": "error",
+                    "message": str(e),
+                    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                }
+                yield f"data: {json.dumps(error_data)}\n\n"
+
+        # ✅ Correct SSE setup
+        return StreamingResponse(
+            generate_stream(),
+            media_type="text/event-stream",
+            headers={
+                "Cache-Control": "no-cache",
+                "Connection": "keep-alive",
+                # no need for Content-Type override anymore
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error in arbitration streaming setup: {e}")
+        raise HTTPException(status_code=500, detail="Arbitration streaming failed")
 
 # Startup and shutdown events
 @app.on_event("startup")
