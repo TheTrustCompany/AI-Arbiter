@@ -5,19 +5,30 @@ Startup script for AI Arbiter FastAPI application
 
 import sys
 import os
+import asyncio
 
 # Add the src directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
-if __name__ == "__main__":
+async def main():
+    """Main async function to run the FastAPI application"""
     import uvicorn
     
-    # Run the FastAPI application
-    uvicorn.run(
+    # Create uvicorn config
+    config = uvicorn.Config(
         "main:app",
         host="0.0.0.0",
         port=8000,
         reload=True,
         log_level="info",
-        app_dir="src"
+        
+
     )
+    
+    # Create and run the server
+    server = uvicorn.Server(config)
+    await server.serve()
+
+if __name__ == "__main__":
+    # Run the FastAPI application with asyncio
+    asyncio.run(main())

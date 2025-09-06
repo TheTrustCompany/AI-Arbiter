@@ -104,49 +104,93 @@ def test_api_health() -> bool:
 
 
 def test_streaming_arbitration() -> bool:
-    """Test streaming arbitration request"""
-    print("\n🌊 Testing streaming arbitration request...")
-
-    request_data = create_arbitration_request()
-
+    """Test the streaming arbitration endpoint"""
+    print("🔄 Testing streaming arbitration...")
+    
     try:
+        # Create test data
+        request_data = create_arbitration_request()
+        
+        print(f"📝 Sending arbitration request for policy: {request_data['policy']['name']}")
+        print(f"📊 Opposer evidences: {len(request_data['opposer_evidences'])}")
+        print(f"📊 Defender evidences: {len(request_data['defender_evidences'])}")
+        
+        # Make streaming request
         response = requests.post(
             STREAM_ENDPOINT,
             json=request_data,
-            headers={"Content-Type": "application/json"},
-            timeout=120,
-            stream=True
+            stream=True,
+            timeout=120
         )
-
-        print(f"Status Code: {response.status_code}")
-
+        
         if response.status_code != 200:
-            print(f"❌ Streaming failed with status: {response.status_code}")
+            print(f"❌ Request failed with status: {response.status_code}")
             print(f"Response: {response.text}")
             return False
-
-        print("✅ Streaming started successfully")
-        chunk_count = 0
-
+        
+        print("✅ Streaming connection established")
+        print("📡 Receiving streaming data:")
+        
+        # Process streaming response
+        chunks_received = 0
+        has_completion = False
+        
         for line in response.iter_lines(decode_unicode=True):
-            if line.startswith("data: "):
-                chunk_count += 1
-                chunk_data = line[6:]
-                try:
-                    parsed_chunk = json.loads(chunk_data)
-                    print(f"📦 Chunk {chunk_count}: {parsed_chunk.get('type', 'unknown')}")
-                    print(f"    Content: {parsed_chunk}")
-                except json.JSONDecodeError:
-                    print(f"📦 Chunk {chunk_count}: Raw content (not JSON)")
-
-                if chunk_count >= 3:  # Stop early
-                    break
-
-        print(f"✅ Received {chunk_count} chunks successfully")
+            if line.strip():
+                # SSE format: "data: {json}"
+                if line.startswith("data: "):
+                    data_str = line[6:]  # Remove "data: " prefix
+                    try:
+                        data = json.loads(data_str)
+                        chunks_received += 1
+                        
+                        # Print chunk info
+                        chunk_type = data.get("type", "unknown")
+                        if chunk_type == "complete":
+                            print(f"🏁 Stream completed: {data.get('message', 'done')}")
+                            has_completion = True
+                            break
+                        elif chunk_type == "error":
+                            print(f"❌ Stream error: {data.get('message', 'unknown error')}")
+                            return False
+                        else:
+                            # This is arbitration data
+                            print(f"📦 Chunk {chunks_received}: {chunk_type}")
+                            print(f"{chunk_type}: {data}")
+                            if "decision" in data:
+                                decision = data["decision"]
+                                print(f"   Decision: {decision.get('verdict', 'N/A')}")
+                                print(f"   Confidence: {decision.get('confidence_score', 'N/A')}")
+                            # Show a preview of the content for the first few chunks
+                            if chunks_received <= 3:
+                                content_preview = str(data)[:100] + "..." if len(str(data)) > 100 else str(data)
+                                print(f"   Preview: {content_preview}")
+                            
+                    except json.JSONDecodeError as e:
+                        print(f"⚠️ Failed to parse JSON: {e}")
+                        print(f"Raw data: {data_str}")
+        
+        print(f"📊 Total chunks received: {chunks_received}")
+        
+        if chunks_received == 0:
+            print("❌ No data chunks received")
+            return False
+        
+        if not has_completion:
+            print("⚠️ Stream ended without completion message")
+            return False
+            
+        print("✅ Streaming arbitration completed successfully")
         return True
-
+        
+    except requests.exceptions.Timeout:
+        print("❌ Request timed out")
+        return False
+    except requests.exceptions.ConnectionError as e:
+        print(f"❌ Connection error: {e}")
+        return False
     except Exception as e:
-        print(f"❌ Streaming test error: {e}")
+        print(f"❌ Unexpected error: {e}")
         return False
 
 

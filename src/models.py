@@ -187,7 +187,7 @@ class ArbitrationDecision(BaseModel):
     defender_id: str = Field(..., description="ID of the defender")
     decision_type: DecisionType = Field(..., description="Type of decision made")
     decision: str = Field(..., description="Decision made by the arbiter")
-    message: str = Field(None, description="Arbiter's message to the user")
     confidence: confloat(ge=0.0, le=1.0) = Field(..., description="Confidence level of the decision (0.0 to 1.0)")
     reasoning: str = Field(None, description="Reasoning behind the decision")
+    message: str = Field(None, description="Arbiter's message to the user")
     created_at: datetime = Field(default_factory=datetime.utcnow, description="Decision timestamp")
