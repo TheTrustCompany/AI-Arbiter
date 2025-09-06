@@ -69,8 +69,8 @@ class Policy(BaseModel):
     be challenged by opponents who submit evidence against them.
 
     Attributes:
-        id (UUID4): Unique policy identifier for database references and tracking.
-        creator_id (UUID4): ID of the user who created the policy, used for
+        id (str): Unique policy identifier for database references and tracking.
+        creator_id (str): ID of the user who created the policy, used for
             accountability and permission checks.
         name (str): Human-readable name of the policy, should be descriptive
             and unique within the system context.
@@ -95,11 +95,11 @@ class Evidence(BaseModel):
     and provides transparency in the arbitration process.
 
     Attributes:
-        id (UUID4): Unique evidence identifier for tracking and referencing
+        id (str): Unique evidence identifier for tracking and referencing
             specific pieces of evidence in decisions.
-        policy_id (UUID4): ID of the policy this evidence relates to, establishing
+        policy_id (str): ID of the policy this evidence relates to, establishing
             the connection between evidence and the disputed policy.
-        submitter_id (UUID4): ID of the user who submitted this evidence, used
+        submitter_id (str): ID of the user who submitted this evidence, used
             for tracking participation and preventing spam.
         content (str): The actual evidence content including facts, arguments,
             documentation, or other relevant information.
@@ -159,13 +159,13 @@ class ArbitrationDecision(BaseModel):
     and accountability.
 
     Attributes:
-        id (UUID4): Unique decision identifier for tracking and referencing
+        id (str): Unique decision identifier for tracking and referencing
             specific arbitration outcomes.
-        policy_id (UUID4): ID of the policy that was evaluated, linking the
+        policy_id (str): ID of the policy that was evaluated, linking the
             decision back to the original dispute context.
-        opposer_id (UUID4): ID of the user who opposed the policy, required
+        opposer_id (str): ID of the user who opposed the policy, required
             for notification and record-keeping purposes.
-        defender_id (UUID4): ID of the user who defended the policy, typically
+        defender_id (str): ID of the user who defended the policy, typically
             the policy creator but may be a designated defender.
         decision_type (DecisionType): The type of decision made, selected from
             the predefined DecisionType enum values.
