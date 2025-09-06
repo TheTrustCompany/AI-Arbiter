@@ -132,6 +132,7 @@ class DecisionType(str, Enum):
         
         NEEDS_MORE_INFO: There is insufficient evidence from both sides to make
             a definitive decision. More information is required before proceeding.
+            Use this type if you don't want to make a decision or take action yet.
         
         REQUEST_OPPOSER_EVIDENCE: The opposer's case has potential merit but
             requires additional evidence or clarification to properly evaluate.

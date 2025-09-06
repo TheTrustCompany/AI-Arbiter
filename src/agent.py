@@ -23,7 +23,7 @@ from pydantic_ai import Agent, RunContext
 from dataclasses import dataclass
 import asyncio
 
-from src.models import DecisionType, Policy, Evidence, ArbitrationDecision
+from models import DecisionType, Policy, Evidence, ArbitrationDecision
 
 load_dotenv()
 
@@ -51,90 +51,78 @@ class ArbiterDependency:
     policy: Policy
     opposer_evidences: List[Evidence]
     defender_evidences: List[Evidence]
-    context: Optional[RunContext]
 
 
 # --- AGENT ---
 
 arbiter_agent = Agent(
     name="Policy Arbiter Agent",
-    model="gpt-5-mini-2025-08-07",
+    model="gpt-5-2025-08-07",
     deps_type=ArbiterDependency,
     output_type=ArbitrationDecision
 )
 
 @arbiter_agent.system_prompt
 async def get_system_prompt(ctx: RunContext[ArbiterDependency]) -> str:
-    return f"""
-    You are a policy arbiter agent. Your task is to evaluate opposers responses for the following policy.
+    _prompt = f"""
+    You are a policy arbiter agent. 
+    Your task is to evaluate Policy and Evidence provided by both opposer and defender. To check wheater defender has neglected the policy or not.
     You can ask clarifying questions if needed.
     You will be provided with the policy and evidences of the defendent of the policy.
 
+    Policy is a set of rules or guidelines or facts that have been agreed upon by both oppeser and defender.
+    Evidence is a piece of information or argument or proof that has been fact checked to be correct.
+
+    Always reason step by step and provide a final decision at the end.
+    Make sure to consider all evidence provided before making a decision.
+    You can ask for evidence for both sides if you need more information.
+
+    Your final decision should be one of the following:
+    - APPROVE: The policy is valid and should be upheld.
+    - REJECT: The policy is invalid and should be overturned.
+    - NEEDS_MORE_INFO: There is insufficient evidence to make a decision. More information is needed. Or if you don't want to make a decision yet.
+    - REQUEST_OPPOSER_EVIDENCE: The opposer's case has potential merit but requires additional evidence or clarification to properly evaluate.
+    - REQUEST_DEFENDER_EVIDENCE: The defender's case has potential merit but requires additional evidence or clarification to properly evaluate.
+
+    Don't make up evidence. Only use the evidence provided.
+    Be objective and impartial in your evaluation.
+    Be concise and clear in your reasoning.
+
+    Don't take action if you don't have to.(use DecisionType as NEEDS_MORE_INFO if you don't want to take action)
+
+    When making your decision, provide a confidence level between 0.0 and 1.0 indicating how certain you are about your decision.
+    Also provide a detailed reasoning for your decision.
+    
+    """
+    _prompt += f"""
     Policy:
+    """
+    _prompt += f"""
     {ctx.deps.policy}
-
-    Defender Evidence:
-    {ctx.deps.defender_evidences}
-
-    Opposer Evidence:
-    {ctx.deps.opposer_evidences}
-
-    Context:
-    {ctx.deps.context.messages}
     """
 
+    _prompt += f"""
+    Defender Evidence:
+    """
+    for evidence in ctx.deps.defender_evidences:
+        _prompt += f"""
+        - {evidence.content} (submitted by {evidence.submitter_id} at {evidence.created_at})
+        """
+
+    _prompt += f"""
+    Opposer Evidence:
+    """
+    for evidence in ctx.deps.opposer_evidences:
+        _prompt += f"""
+        - {evidence.content} (submitted by {evidence.submitter_id} at {evidence.created_at})
+        """
+
+    _prompt += f"""
+    Context:
+    {ctx.messages}
+    """
+    return _prompt
 # --- TOOLS IMPLEMENTATIONS ---
 
-@arbiter_agent.tool
-async def request_opposer_evidence(ctx: RunContext[ArbiterDependency], question: str) -> str:
-    """
-    Request additional evidence from the opposer during arbitration.
+#Tools will be implemented in the future
 
-    This tool allows the arbiter agent to gather more information from users
-    who oppose a policy when the initial evidence is insufficient for making
-    a decision. The tool simulates an interactive evidence gathering process.
-
-    Args:
-        ctx (RunContext[ArbiterDependency]): The runtime context containing
-            arbitration state and policy information.
-        question (str): The specific question to ask the opposer. Should be
-            clear, focused, and directly related to the policy dispute.
-
-    Returns:
-        str: The opposer's response to the question. In the current implementation,
-            this returns a simulated response for testing purposes.
-
-    Note:
-        This is currently implemented as a simulation. In production, this would
-        interface with a user notification system to collect real responses.
-    """
-    # Simulate asking the opposer for more evidence
-    await asyncio.sleep(1)
-    return f"Simulated response to '{question}' from opposer."
-
-@arbiter_agent.tool
-async def request_defender_evidence(ctx: RunContext[ArbiterDependency], question: str) -> str:
-    """
-    Request additional evidence from the defender during arbitration.
-
-    This tool allows the arbiter agent to gather more information from users
-    who defend a policy when the initial evidence is insufficient for making
-    a decision. The tool simulates an interactive evidence gathering process.
-
-    Args:
-        ctx (RunContext[ArbiterDependency]): The runtime context containing
-            arbitration state and policy information.
-        question (str): The specific question to ask the defender. Should be
-            clear, focused, and directly related to the policy defense.
-
-    Returns:
-        str: The defender's response to the question. In the current implementation,
-            this returns a simulated response for testing purposes.
-
-    Note:
-        This is currently implemented as a simulation. In production, this would
-        interface with a user notification system to collect real responses.
-    """
-    # Simulate asking the defender for more evidence
-    await asyncio.sleep(1)
-    return f"Simulated response to '{question}' from defender."

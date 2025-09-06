@@ -89,7 +89,7 @@ async def health_check():
     )
 
 @app.post("/arbitrate")
-async def arbitrate_policy(request: Request):
+async def arbitrate_query(request: Request):
     """
     Main arbitration endpoint that will use the agent service
     This will be expanded to handle policy arbitration requests
