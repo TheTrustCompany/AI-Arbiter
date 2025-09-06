@@ -22,8 +22,8 @@ def create_sample_policy_data() -> Dict[str, Any]:
     return {
         "id": str(uuid.uuid4()),
         "creator_id": str(uuid.uuid4()),
-        "name": "Remote Work Policy",
-        "description": "Policy agreed upon by both management and employees: Employees are allowed to work remotely up to 3 days per week, but must maintain productivity standards and attend all mandatory meetings in person.",
+        "name": "Data Security and Access Control Policy",
+        "description": "Policy agreed upon by both IT management and security team: All employee access to sensitive customer data must be logged and monitored. Any access to customer payment information requires explicit written approval from the Data Protection Officer (DPO) before access is granted. All access logs must be reviewed weekly by the security team. No exceptions are permitted without formal risk assessment documentation.",
         "created_at": datetime.utcnow().isoformat()
     }
 
@@ -49,12 +49,17 @@ def create_arbitration_request() -> Dict[str, Any]:
         create_sample_evidence_data(
             policy_id, 
             opposer_id, 
-            "Management has failed to enforce the productivity standards outlined in the remote work policy. Employee productivity has dropped 20% with no corrective action taken."
+            "Security audit logs from the past month show that 15 employees accessed customer payment data without any written DPO approval. The access occurred on multiple dates: March 3rd, March 10th, March 17th, and March 24th. No approval forms exist in the DPO office records."
         ),
         create_sample_evidence_data(
             policy_id, 
             opposer_id, 
-            "The policy requires attendance at mandatory meetings, but management has been allowing remote workers to skip these meetings without consequences."
+            "Weekly security log reviews have not been conducted for the past 6 weeks. The security team's own meeting minutes confirm they 'have been too busy with other projects to review access logs as required by the policy.'"
+        ),
+        create_sample_evidence_data(
+            policy_id, 
+            opposer_id, 
+            "IT management has been granting emergency access to customer payment systems without requiring the mandatory DPO approval, claiming 'business urgency' without any formal risk assessment documentation as required by the policy."
         )
     ]
     
@@ -62,12 +67,17 @@ def create_arbitration_request() -> Dict[str, Any]:
         create_sample_evidence_data(
             policy_id, 
             defender_id, 
-            "We have implemented new productivity tracking tools and are working on improvement plans for underperforming remote workers. The policy is being followed."
+            "We have implemented a new automated logging system that captures all data access attempts. The system is working perfectly and all access is being tracked as required."
         ),
         create_sample_evidence_data(
             policy_id, 
             defender_id, 
-            "Meeting attendance has improved 15% since we clarified the mandatory meeting requirements. We are enforcing the policy appropriately."
+            "Our team has been very busy with critical system upgrades and maintenance. We prioritize security but sometimes operational needs require flexible interpretation of policies to keep business running smoothly."
+        ),
+        create_sample_evidence_data(
+            policy_id, 
+            defender_id, 
+            "The DPO approval process can be slow and sometimes delays urgent business needs. We use our best judgment to grant access when needed and follow up with paperwork later. This approach has not caused any actual security breaches."
         )
     ]
     
@@ -75,7 +85,7 @@ def create_arbitration_request() -> Dict[str, Any]:
         "policy": policy_data,
         "opposer_evidences": opposer_evidences,
         "defender_evidences": defender_evidences,
-        "user_query": "I am filing a complaint that management (the defender) is not properly enforcing the remote work policy that we all agreed upon. They are not maintaining the productivity standards and meeting attendance requirements as specified in the policy."
+        "user_query": "I am filing a complaint against IT management (the defender) for systematic violation of our agreed-upon Data Security and Access Control Policy. The policy clearly states that ALL access to customer payment information requires explicit written DPO approval BEFORE access is granted, with NO EXCEPTIONS unless formal risk assessment documentation exists. However, IT management has been regularly granting access without DPO approval, claiming 'business urgency' and 'flexible interpretation' while completely ignoring the mandatory approval process. They admit to 'following up with paperwork later' which directly violates the policy requirement for PRIOR approval. Additionally, they have failed to conduct the mandatory weekly security log reviews for 6 weeks, violating another core requirement. This is not about operational flexibility - this is about deliberate non-compliance with security policy that puts customer data at risk."
     }
 
 def test_api_health():
