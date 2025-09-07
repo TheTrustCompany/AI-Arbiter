@@ -98,9 +98,10 @@ class ArbiterService:
             ) as stream:
                 async for partial_output in stream.stream_output():
                     formatted_result = self._format_arbitration_decision(partial_output)
-                    yield f"data: {json.dumps(formatted_result)}\n\n"
+                    yield f"'type': 'partial', data: {json.dumps(formatted_result)}\n\n"
 
-            yield f"data: {json.dumps({'type': 'complete', 'message': 'done'})}\n\n"
+
+            yield f"data: {json.dumps({'type': 'complete', 'message': 'done', 'data': formatted_result})}\n\n"
 
         except Exception as e:
             logger.error(f"Error processing arbitration with streaming: {e}")
