@@ -81,7 +81,7 @@ async def get_system_prompt(ctx: RunContext[ArbiterDependency]) -> str:
     - APPROVE: The policy is valid and should be upheld.
     - REJECT: The policy is invalid and should be overturned.
     - CLEARIFY: Use this if you don't want to make a decision yet. Ask questions to gather more information about the problem.
-    - REQUEST_OPPOSER_EVIDENCE: The opposer's case has potential merit but requires additional evidence or clarification to properly evaluate.
+    - REQUEST_OPPOSER_EVIDENCE: The Opposer needs to provide more evidence to support their claim.
     - REQUEST_DEFENDER_EVIDENCE: The defender's case has potential merit but requires additional evidence or clarification to properly evaluate.
 
     Don't make up evidence. Only use the evidence provided.
